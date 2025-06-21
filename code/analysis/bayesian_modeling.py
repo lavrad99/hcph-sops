@@ -266,7 +266,7 @@ def estimate_pi0_naive(D):
     
     my_gmm.fit(D_pos)
     
-    u1_hat = gmm.weights_[gmm.means_.flatten() == (gmm.means_.flatten()).min()]
+    u1_hat = my_gmm.weights_[my_gmm.means_.flatten() == (my_gmm.means_.flatten()).min()]
     
     pi0_hat = u0_hat + (1-u0_hat)*u1_hat
     
