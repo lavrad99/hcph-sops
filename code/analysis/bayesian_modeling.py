@@ -251,6 +251,28 @@ def fit_mixture_model(
     return traces, model, model_info
 
 
+
+def estimate_pi0_naive(D):
+    """
+    Provide the naive estimate of pi0 assuming zero-inflated univariate Gaussian mixtures 
+    
+    D is a numpy array containing fiber-densities across subjects
+    """
+    u0_hat = np.mean(x == 0)
+    
+    D_pos = D[D > 0]
+    
+    my_gmm = GaussianMixture(n_components=2)
+    
+    my_gmm.fit(D_pos)
+    
+    u1_hat = gmm.weights_[gmm.means_.flatten() == (gmm.means_.flatten()).min()]
+    
+    pi0_hat = u0_hat + (1-u0_hat)*u1_hat
+    
+    return pi0_hat
+
+
 def create_analysis_plots(trace, params, model, model_info):
     """
     Create analysis plots without displaying them.
