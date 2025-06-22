@@ -5,6 +5,8 @@ import arviz as az
 import matplotlib.pyplot as plt
 import seaborn as sns
 from IPython.display import display
+from sklearn.mixture import GaussianMixture
+
 
 
 def generate_synthetic_data(
@@ -252,25 +254,38 @@ def fit_mixture_model(
 
 
 
+import numpy as np
+import pandas as pd
+from tqdm import tqdm
+from sklearn.mixture import GaussianMixture
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 def estimate_pi0_naive(D):
     """
     Provide the naive estimate of pi0 assuming zero-inflated univariate Gaussian mixtures 
     
     D is a numpy array containing fiber-densities across subjects
     """
-    u0_hat = np.mean(x == 0)
+    u0_hat = np.mean(D == 0)
     
     D_pos = D[D > 0]
     
     my_gmm = GaussianMixture(n_components=2)
     
-    my_gmm.fit(D_pos)
+    my_gmm.fit(D_pos.reshape(-1,1))
     
     u1_hat = my_gmm.weights_[my_gmm.means_.flatten() == (my_gmm.means_.flatten()).min()]
     
     pi0_hat = u0_hat + (1-u0_hat)*u1_hat
     
-    return pi0_hat
+    
+    
+    return pd.DataFrame({"pi_0":[pi0_hat[0]] ,
+            "mu_FP":[my_gmm.means_.flatten()[my_gmm.means_.flatten() == (my_gmm.means_.flatten()).min()][0]],
+            "mu_TP":[my_gmm.means_.flatten()[my_gmm.means_.flatten() == (my_gmm.means_.flatten()).max()][0]],
+            "sigma_FP":[np.sqrt(my_gmm.covariances_.flatten()[my_gmm.means_.flatten() == (my_gmm.means_.flatten()).min()])[0]],
+            "sigma_TP":[np.sqrt(my_gmm.covariances_.flatten()[my_gmm.means_.flatten() == (my_gmm.means_.flatten()).max()])[0]]})
 
 
 def create_analysis_plots(trace, params, model, model_info):
